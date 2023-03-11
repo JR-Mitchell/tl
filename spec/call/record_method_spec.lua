@@ -64,20 +64,171 @@ describe("record method call", function()
       }))
    end)
 
-   it("catches wrong use of self. in call", util.check_type_error([[
-      local record Foo
-      end
-      function Foo:method_a()
-      end
-      function Foo:method_c(arg: string)
-      end
-      function Foo:method_b()
-         self.method_a()
-         self.method_c("hello")
-      end
-   ]], {
-      { y = 8, msg = "invoked method as a regular function: use ':' instead of '.'" },
-      { y = 9, msg = "invoked method as a regular function: use ':' instead of '.'" },
-   }))
+   describe("catches wrong use of self.", function() 
+   
+      it("in call for top-level method", util.check_type_error([[
+         local record Foo
+         end
+         function Foo:method_a()
+         end
+         function Foo:method_c(arg: string)
+         end
+         function Foo:method_b()
+            self.method_a()
+            self.method_c("hello")
+         end
+      ]], {
+         { y = 8, msg = "invoked method as a regular function: use ':' instead of '.'" },
+         { y = 9, msg = "invoked method as a regular function: use ':' instead of '.'" },
+      }))
+
+      it("in call for method declared in record", util.check_type_error([[
+         local record Foo
+            method_a: function(self: Foo)
+            method_c: function(self: Foo, other: Foo)
+         end
+         function Foo:method_b(other: Foo)
+            self.method_a()
+            self.method_c(other)
+         end
+      ]], {
+         { y = 6, msg = "invoked method as a regular function: use ':' instead of '.'" },
+         { y = 7, msg = "invoked method as a regular function: use ':' instead of '.'" },
+      }))
+
+      it("in call for method declared in nested record", util.check_type_error([[
+         local record Foo
+            record Bar
+               method_a: function(self: Bar)
+               method_c: function(self: Bar, other: Bar)
+            end
+         end
+         local function function_b(bar: Foo.Bar)
+            bar.method_a()
+            bar.method_c(bar)
+         end
+      ]], {
+         { y = 8, msg = "invoked method as a regular function: use ':' instead of '.'" },
+         { y = 9, msg = "invoked method as a regular function: use ':' instead of '.'" },
+      }))
+
+      it("in call for method declared in type record", util.check_type_error([[
+         local type Foo = record
+            method_a: function(self: Foo)
+            method_c: function(self: Foo, arg: string)
+            type Bar = record
+               method_d: function(self: Bar)
+               method_e: function(self: Bar, other: Bar)
+            end
+         end
+         function Foo:method_a()
+         end
+         function Foo:method_c(arg: string)
+         end
+         function Foo:method_b()
+            self.method_a()
+            self.method_c("hello")
+         end
+         local function function_f(bar: Foo.Bar)
+            bar.method_d()
+            bar.method_e(bar)
+         end 
+      ]], {
+         { y = 14, msg = "invoked method as a regular function: use ':' instead of '.'" },
+         { y = 15, msg = "invoked method as a regular function: use ':' instead of '.'" },
+         { y = 18, msg = "invoked method as a regular function: use ':' instead of '.'" },
+         { y = 19, msg = "invoked method as a regular function: use ':' instead of '.'" },
+      }))
+
+      it("in call for method declared in generic record", util.check_type_error([[
+         local record Foo<T>
+            method_a: function(self: Foo<T>)
+            method_c: function(self: Foo<T>, other: Foo<T>)
+         end
+         local function function_b<T>(first: Foo<T>, second: Foo<T>)
+            first.method_a()
+            first.method_c(second)
+         end
+      ]], {
+         { y = 6, msg = "invoked method as a regular function: use ':' instead of '.'" },
+         { y = 7, msg = "invoked method as a regular function: use ':' instead of '.'" },
+      }))
+   
+   end)
+
+   describe("accepts correct use of self:", function() 
+   
+      it("in call for top-level method", util.check([[
+         local record Foo
+         end
+         function Foo:method_a()
+         end
+         function Foo:method_c(arg: string)
+         end
+         function Foo:method_b()
+            self:method_a()
+            self:method_c("hello")
+         end
+      ]]))
+   
+      it("in call for method declared in record", util.check([[
+         local record Foo
+            method_a: function(self: Foo)
+            method_c: function(self: Foo, other: Foo)
+         end
+         function Foo:method_b(other: Foo)
+            self:method_a()
+            self:method_c(other)
+         end
+      ]]))
+   
+      it("in call for method declared in nested record", util.check([[
+         local record Foo
+            record Bar
+               method_a: function(self: Bar)
+               method_c: function(self: Bar, other: Bar)
+            end
+         end
+         local function function_b(bar: Foo.Bar)
+            bar:method_a()
+            bar:method_c(bar)
+         end
+      ]]))
+
+      it("in call for method declared in type record", util.check([[
+         local type Foo = record
+            method_a: function(self: Foo)
+            method_c: function(self: Foo, arg: string)
+            type Bar = record
+               method_d: function(self: Bar)
+               method_e: function(self: Bar, other: Bar)
+            end
+         end
+         function Foo:method_a()
+         end
+         function Foo:method_c(arg: string)
+         end
+         function Foo:method_b()
+            self:method_a()
+            self:method_c("hello")
+         end
+         local function function_f(bar: Foo.Bar)
+            bar:method_d()
+            bar:method_e(bar)
+         end 
+      ]]))
+   
+      it("in call for method declared in generic record", util.check([[
+         local record Foo<T>
+            method_a: function(self: Foo<T>)
+            method_c: function(self: Foo<T>, other: Foo<T>)
+         end
+         local function function_b<T>(first: Foo<T>, second: Foo<T>)
+            first:method_a()
+            first:method_c(second)
+         end
+      ]]))
+
+   end)
 
 end)
