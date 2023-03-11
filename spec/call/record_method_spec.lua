@@ -243,7 +243,65 @@ describe("record method call", function()
             first.method_c(second, second)
          end
       ]]))
+
+      describe("if the argument name is not actually self", function()
+   
+         it("in call for method declared in record", util.check([[
+            local record Foo
+               function_a: function(first: Foo)
+               function_c: function(first: Foo, second: Foo)
+            end
+            function Foo:method_b(other: Foo)
+               self.function_a()
+               self.function_c(other)
+            end
+         ]]))
+   
+         it("in call for method declared in nested record", util.check([[
+            local record Foo
+               record Bar
+                  function_a: function(first: Bar)
+                  function_c: function(first: Bar, second: Bar)
+               end
+            end
+            local function function_b(bar: Foo.Bar)
+               bar.function_a()
+               bar.function_c(bar)
+            end
+         ]]))
+   
+         it("in call for method declared in type record", util.check([[
+            local type Foo = record
+               function_a: function(first: Foo)
+               function_c: function(first: Foo, arg: string)
+               type Bar = record
+                  function_d: function(first: Bar)
+                  function_e: function(first: Bar, second: Bar)
+               end
+            end
+            function Foo:method_b()
+               self.function_a()
+               self.function_c()
+            end
+            local function function_f(bar: Foo.Bar)
+               bar.function_d()
+               bar.function_e(bar)
+            end 
+         ]]))
+   
+         it("in call for method declared in generic record", util.check([[
+            local record Foo<T>
+               function_a: function(first: Foo<T>)
+               function_c: function(first: Foo<T>, second: Foo<T>)
+            end
+            local function function_b<T>(first: Foo<T>, second: Foo<T>)
+               first.function_a()
+               first.function_c(second)
+            end
+         ]]))
       
+      end)
+
    end)
 
 end)
