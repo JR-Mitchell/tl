@@ -231,4 +231,19 @@ describe("record method call", function()
 
    end)
 
+   describe("accepts correct use of self.", function() 
+
+      it("in call to function with specified generic type argument", util.check([[
+         local record Foo<T>
+            method_a: function(self: Foo<string>)
+            method_c: function(self: Foo<string>, other: Foo<string>)
+         end
+         local function function_b(first: Foo<integer>, second: Foo<string>)
+            first.method_a(second)
+            first.method_c(second, second)
+         end
+      ]]))
+      
+   end)
+
 end)
