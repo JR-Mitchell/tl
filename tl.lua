@@ -1687,9 +1687,7 @@ local function parse_function_type(ps, i)
       typ.args = a_type({ typename = "tuple", is_va = true, a_type({ typename = "any" }) })
       typ.rets = a_type({ typename = "tuple", is_va = true, a_type({ typename = "any" }) })
    end
-   if typ.args.is_method then
-
-      typ.args.is_method = nil
+   if typ.args and typ.args[1] and typ.args[1].is_self then
       typ.is_method = true
    end
    return i, typ
@@ -2348,9 +2346,6 @@ parse_argument_type_list = function(ps, i)
    if list[#list] and list[#list].is_va then
       list[#list].is_va = nil
       list.is_va = true
-   elseif list[1] and list[1].is_self then
-
-      list.is_method = true
    end
    return i, list
 end
