@@ -322,7 +322,7 @@ describe("record method call", function()
                   function_c: function(self: Foo, other: Foo)
                end
             end
-            local function function_b(other: Foo)
+            local function function_b(bar: Foo.Bar, other: Foo)
                bar.function_a()
                bar.function_c(other)
             end
@@ -341,7 +341,7 @@ describe("record method call", function()
                self.function_a()
                self.function_c()
             end
-            local function function_f(foo: Foo)
+            local function function_f(bar: Foo.Bar, foo: Foo)
                bar.function_d()
                bar.function_e(foo)
             end 
