@@ -85,11 +85,11 @@ describe("record method call", function()
       it("in call for method declared in record", util.check_type_error([[
          local record Foo
             method_a: function(self: Foo)
-            method_c: function(self: Foo, other: Foo)
+            method_c: function(self: Foo, argument: string)
          end
-         function Foo:method_b(other: Foo)
+         function Foo:method_b()
             self.method_a()
-            self.method_c(other)
+            self.method_c("hello")
          end
       ]], {
          { y = 6, msg = "invoked method as a regular function: use ':' instead of '.'" },
@@ -100,12 +100,12 @@ describe("record method call", function()
          local record Foo
             record Bar
                method_a: function(self: Bar)
-               method_c: function(self: Bar, other: Bar)
+               method_c: function(self: Bar, argument: string)
             end
          end
          local function function_b(bar: Foo.Bar)
             bar.method_a()
-            bar.method_c(bar)
+            bar.method_c("hello")
          end
       ]], {
          { y = 8, msg = "invoked method as a regular function: use ':' instead of '.'" },
@@ -118,7 +118,7 @@ describe("record method call", function()
             method_c: function(self: Foo, arg: string)
             type Bar = record
                method_d: function(self: Bar)
-               method_e: function(self: Bar, other: Bar)
+               method_e: function(self: Bar, arg: string)
             end
          end
          function Foo:method_a()
@@ -131,7 +131,7 @@ describe("record method call", function()
          end
          local function function_f(bar: Foo.Bar)
             bar.method_d()
-            bar.method_e(bar)
+            bar.method_e("hello")
          end 
       ]], {
          { y = 14, msg = "invoked method as a regular function: use ':' instead of '.'" },
@@ -143,11 +143,11 @@ describe("record method call", function()
       it("in call for method declared in generic record", util.check_type_error([[
          local record Foo<T>
             method_a: function(self: Foo<T>)
-            method_c: function(self: Foo<T>, other: Foo<T>)
+            method_c: function(self: Foo<T>, other: string)
          end
-         local function function_b<T>(first: Foo<T>, second: Foo<T>)
+         local function function_b<T>(first: Foo<T>)
             first.method_a()
-            first.method_c(second)
+            first.method_c("hello")
          end
       ]], {
          { y = 6, msg = "invoked method as a regular function: use ':' instead of '.'" },
@@ -174,11 +174,11 @@ describe("record method call", function()
       it("in call for method declared in record", util.check([[
          local record Foo
             method_a: function(self: Foo)
-            method_c: function(self: Foo, other: Foo)
+            method_c: function(self: Foo, argument: string)
          end
-         function Foo:method_b(other: Foo)
+         function Foo:method_b()
             self:method_a()
-            self:method_c(other)
+            self:method_c("hello")
          end
       ]]))
    
@@ -186,12 +186,12 @@ describe("record method call", function()
          local record Foo
             record Bar
                method_a: function(self: Bar)
-               method_c: function(self: Bar, other: Bar)
+               method_c: function(self: Bar, argument: string)
             end
          end
          local function function_b(bar: Foo.Bar)
             bar:method_a()
-            bar:method_c(bar)
+            bar:method_c("hello")
          end
       ]]))
 
@@ -201,7 +201,7 @@ describe("record method call", function()
             method_c: function(self: Foo, arg: string)
             type Bar = record
                method_d: function(self: Bar)
-               method_e: function(self: Bar, other: Bar)
+               method_e: function(self: Bar, arg: string)
             end
          end
          function Foo:method_a()
@@ -214,18 +214,18 @@ describe("record method call", function()
          end
          local function function_f(bar: Foo.Bar)
             bar:method_d()
-            bar:method_e(bar)
+            bar:method_e("hello")
          end 
       ]]))
    
       it("in call for method declared in generic record", util.check([[
          local record Foo<T>
             method_a: function(self: Foo<T>)
-            method_c: function(self: Foo<T>, other: Foo<T>)
+            method_c: function(self: Foo<T>, argument: string)
          end
-         local function function_b<T>(first: Foo<T>, second: Foo<T>)
+         local function function_b<T>(first: Foo<T>)
             first:method_a()
-            first:method_c(second)
+            first:method_c("hello")
          end
       ]]))
 
