@@ -2332,7 +2332,7 @@ local function parse_argument_type(ps: ParseState, i: integer): integer, Type, i
       typ.is_va = is_va
    end
 
-   if argument_name == "self" then -- TODO: make this condition tighter
+   if argument_name == "self" and typ.typename == "nominal" then
       typ.is_self = true
    end
 
