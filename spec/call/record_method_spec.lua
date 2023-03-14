@@ -302,6 +302,66 @@ describe("record method call", function()
       
       end)
 
+      describe("if the argument name is self but its type does not match the receiver type", function()
+   
+         it("in call for method declared in record", util.check([[
+            local record Foo
+               function_a: function(self: string)
+               function_c: function(self: string, other: string)
+            end
+            function Foo:method_b()
+               self.function_a()
+               self.function_c("hello")
+            end
+         ]]))
+   
+         it("in call for method declared in nested record", util.check([[
+            local record Foo
+               record Bar
+                  function_a: function(self: Foo)
+                  function_c: function(self: Foo, other: Foo)
+               end
+            end
+            local function function_b(other: Foo)
+               bar.function_a()
+               bar.function_c(other)
+            end
+         ]]))
+   
+         it("in call for method declared in type record", util.check([[
+            local type Foo = record
+               function_a: function(self: string)
+               function_c: function(self: string, arg: string)
+               type Bar = record
+                  function_d: function(self: Foo)
+                  function_e: function(self: Foo, other: Foo)
+               end
+            end
+            function Foo:method_b()
+               self.function_a()
+               self.function_c()
+            end
+            local function function_f(foo: Foo)
+               bar.function_d()
+               bar.function_e(foo)
+            end 
+         ]]))
+   
+         it("in call for method declared in generic record", util.check([[
+            local record Foo<T>
+               function_a: function(self: Foo<string>)
+               function_c: function(self: Foo<string>, other: Foo<string>)
+               function_d: function(self: string, other: string)
+            end
+            local function function_b(first: Foo<integer>, other: Foo<string>)
+               first.function_a()
+               first.function_c(other)
+               first.function_d("hello")
+            end
+         ]]))
+      
+      end)
+
    end)
 
 end)
